@@ -6,10 +6,13 @@ public class KitchenSinkManager : MonoBehaviour
 {
 	public AudioClip scoresSound;
 	public AudioClip optionsSound;
-	
+	public GameObject coinModelPrefab;
 
 	void Start()
 	{
+		var coinModel = UIGameObjectMesh.create(coinModelPrefab, 0, 0, 0);
+		coinModel.positionCenter();
+		
 		// IMPORTANT: depth is 1 on top higher numbers on the bottom.  This means the lower the number is the closer it gets to the camera.
 		var playButton = UIButton.create( "playUp.png", "playDown.png", 0, 0 );
         playButton.positionFromTopLeft( 0.05f, 0f );

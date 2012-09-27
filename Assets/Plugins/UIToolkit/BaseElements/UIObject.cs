@@ -28,29 +28,32 @@ public class UIObject : System.Object, IPositionable
 	/// </value>
 	public object userData;
 	
-	
 	/// <summary>
 	/// Sets up the client GameObject along with it's layer and caches the transform
 	/// </summary>
-	public UIObject()
+	public UIObject(GameObject prefab = null)
 	{
 		// Setup our GO
-		_client = new GameObject( this.GetType().Name );
-		_client.transform.parent = UI.instance.transform; // Just for orginization in the hierarchy
+		if (prefab) {
+			_client = Object.Instantiate( prefab ) as GameObject;
+		} else {
+			_client = new GameObject( this.GetType().Name );
+		}
+		
+		// Cache the clientTransform
+		clientTransform = _client.transform;
+
+		clientTransform.parent = UI.instance.transform; // Just for orginization in the hierarchy
 		_client.layer = UI.instance.layer; // Set the proper layer so we only render on the UI camera
 
 		UIElement uie = _client.AddComponent<UIElement>();
 		uie.UIObject = this;
 		
 
-		// Cache the clientTransform
-		clientTransform = _client.transform;
-		
 		// Create a default anchor info object
 		_anchorInfo = UIAnchorInfo.DefaultAnchorInfo();
 	}
-
-
+	
 	#region Transform passthrough properties so we can update necessary verts when changes occur
 
 	public virtual float zIndex
