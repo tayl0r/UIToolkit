@@ -7,6 +7,7 @@ public class UI : MonoBehaviour
 	// All access should go through instance and you are trusted not to set it :)
 	static public UI instance = null;
 	static public UIToolkit firstToolkit = null; // we stick the first available toolkit so when using one atlas the API remains simple
+	public UIToolkit firstToolkitOverride = null;
 	
 	public int drawDepth = 100;	
 	public LayerMask UILayer = 0;
@@ -106,9 +107,13 @@ public class UI : MonoBehaviour
 		
 		// grab all our child UIToolkits
 		_toolkitInstances = GetComponentsInChildren<UIToolkit>();
-		firstToolkit = _toolkitInstances[0];
+		if (firstToolkitOverride == null) {
+			firstToolkit = _toolkitInstances[0];
+		} else {
+			firstToolkit = firstToolkitOverride;
+		}
 #if UNITY_EDITOR
-		if( _toolkitInstances.Length == 0 )
+		if( _toolkitInstances.Length == 0 || firstToolkit == null)
 			throw new System.Exception( "Could not find any UIToolkit instances in children of UI" );
 #endif
 		
