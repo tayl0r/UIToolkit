@@ -209,8 +209,8 @@ public class UIText : System.Object
 		var text = textInstance.text;
 		text = wrapText( text, scale );
 		
-		int lineStartChar = 0;
-		int lineEndChar = 0;
+		int visibleSpritesInCurrentLine = 0;
+		int totalVisibleSpritesInText = 0;
 		
 		float totalHeight = ( _fontDetails[ASCII_LINEHEIGHT_REFERENCE].h * scale * lineSpacing );
 		
@@ -226,10 +226,11 @@ public class UIText : System.Object
 				fontLineSkip += (int)( _fontDetails[ASCII_LINEHEIGHT_REFERENCE].h * scale * lineSpacing );
 				totalHeight += (int)( _fontDetails[ASCII_LINEHEIGHT_REFERENCE].h * scale * lineSpacing );
 				
-				alignLine( textInstance.textSprites, lineStartChar, lineEndChar, dx, instanceAlignMode );
+				int lineStartSprite = totalVisibleSpritesInText - visibleSpritesInCurrentLine;
 				
-				lineStartChar = i + 1;
+				alignLine( textInstance.textSprites, lineStartSprite, totalVisibleSpritesInText, dx, instanceAlignMode );
 				
+				visibleSpritesInCurrentLine = 0;
 				dx = 0;
 			}
 			else
@@ -237,35 +238,39 @@ public class UIText : System.Object
 				// calculate the size to center text on Y axis, based on its scale
 				offsetY = _fontDetails[charId].offsety * scale;
 				dy = offsetY + fontLineSkip;
+				
+				visibleSpritesInCurrentLine++;
+				totalVisibleSpritesInText++;
 			}
 			
-			// Extend end of line
-			lineEndChar = i;
-
-			// add quads for each char
-			// Use curpos instead of i to compensate for line wrapping hyphenation
-			// reuse a UISprite if we have one. if we don't, we need to set it's parent and add it to the textInstance's list
-			var currentTextSprite = textInstance.textSpriteAtIndex( i );
-			var addingNewTextSprite = currentTextSprite == null;
-			
-			currentTextSprite = configureSpriteForCharId( currentTextSprite, charId, dx, dy, scale, 0 );
-			
-			if( addingNewTextSprite )
+			if( charId != ASCII_NEWLINE )
 			{
-				currentTextSprite.color = color.Length == 1 ? color[0] : color[i];
-				currentTextSprite.parentUIObject = textInstance;
-				textInstance.textSprites.Add( currentTextSprite );
+				// add quads for each char
+				// Use curpos instead of i to compensate for line wrapping hyphenation
+				// reuse a UISprite if we have one. if we don't, we need to set it's parent and add it to the textInstance's list
+				var currentTextSprite = textInstance.textSpriteAtIndex( i );
+				var addingNewTextSprite = currentTextSprite == null;
+				
+				currentTextSprite = configureSpriteForCharId( currentTextSprite, charId, dx, dy, scale, 0 );
+				
+				if( addingNewTextSprite )
+				{
+					currentTextSprite.color = color.Length == 1 ? color[0] : color[i];
+					currentTextSprite.parentUIObject = textInstance;
+					textInstance.textSprites.Add( currentTextSprite );
+				}
+	
+	            // Ensure the sprite is hidden if the textInstance is
+				currentTextSprite.hidden = hidden;
+				
+				// See below @NOTE re: offsetx vs. xadvance bugfix.
+				// advance the position to draw the next letter
+				dx += _fontDetails[charId].xadvance * scale;
 			}
-
-            // Ensure the sprite is hidden if the textInstance is
-            currentTextSprite.hidden = hidden;
-			
-			// See below @NOTE re: offsetx vs. xadvance bugfix.
-			// advance the position to draw the next letter
-			dx += _fontDetails[charId].xadvance * scale;
 		}
 		
-		alignLine( textInstance.textSprites, lineStartChar, lineEndChar, dx, instanceAlignMode );
+		int lineStartSprite2 = totalVisibleSpritesInText - visibleSpritesInCurrentLine;
+		alignLine( textInstance.textSprites, lineStartSprite2, totalVisibleSpritesInText, dx, instanceAlignMode );
 		verticalAlignText( textInstance.textSprites, totalHeight, _fontDetails[ASCII_LINEHEIGHT_REFERENCE].offsety * scale * lineSpacing, instanceVerticalAlignMode );
 
         // Re-position textInstance
@@ -285,7 +290,7 @@ public class UIText : System.Object
 		if( instanceAlignMode == UITextAlignMode.Center )
 		{
 			// Go from start character to end character, INCLUSIVE.
-			for ( var i = lineStartChar; i <= lineEndChar; i++ )
+			for ( var i = lineStartChar; i < lineEndChar; i++ )
 			{
 				if( sprites[i] != null )
 					sprites[i].position = new Vector3( sprites[i].position.x - lineWidth / 2.0f, sprites[i].position.y, sprites[i].position.z );
@@ -294,7 +299,7 @@ public class UIText : System.Object
 		else if( instanceAlignMode == UITextAlignMode.Right )
 		{
 			// Go from start character to end character, INCLUSIVE.
-			for ( var i = lineStartChar; i <= lineEndChar; i++ )
+			for ( var i = lineStartChar; i < lineEndChar; i++ )
 			{
 				if ( i < sprites.Count && sprites[i] != null )
 					sprites[i].position = new Vector3( sprites[i].position.x - lineWidth, sprites[i].position.y, sprites[i].position.z );
