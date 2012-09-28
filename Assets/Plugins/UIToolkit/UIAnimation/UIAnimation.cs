@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-public enum UIAnimationProperty { Position, Scale, EulerAngles, Alpha, Color };
+public enum UIAnimationProperty { Position, Scale, EulerAngles, Alpha, Color, TextScale };
 
 public class UIAnimation
 {
@@ -135,6 +135,10 @@ public class UIAnimation
 				case UIAnimationProperty.Color:
 					sprite.color = Color.Lerp( startColor, targetColor, easPos );
 					break;
+				case UIAnimationProperty.TextScale:
+					UITextInstance txt = (UITextInstance)sprite;
+					txt.textScale = Mathf.Lerp( startFloat, targetFloat, easPos );
+					break;
 			}
 
 			// See if we are done with our animation yet
@@ -233,6 +237,10 @@ public class UIAnimation
 			case UIAnimationProperty.Color:
 				startColor = sprite.color;
 				break;
+			case UIAnimationProperty.TextScale:
+				UITextInstance txt = (UITextInstance)sprite;
+				startFloat = txt.textScale;
+				break;
 		}
 	}
 	
@@ -260,6 +268,7 @@ public class UIAnimation
 			case UIAnimationProperty.Position:
 			case UIAnimationProperty.Scale:
 			case UIAnimationProperty.EulerAngles:
+			case UIAnimationProperty.TextScale:
 				target = newTarget;
 				break;
 		}

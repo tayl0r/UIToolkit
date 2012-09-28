@@ -103,6 +103,25 @@ public static class UIObjectAnimationExtensions
 	}
 
 	
+	// text scale
+	public static UIAnimation scaleTo( this UITextInstance sprite, float duration, float target, UIEaseType ease )
+	{
+		return to( sprite, duration, UIAnimationProperty.TextScale, target, ease );
+	}
+	
+
+	public static UIAnimation scaleFrom( this UITextInstance sprite, float duration, float target, UIEaseType ease )
+	{
+		return from( sprite, duration, UIAnimationProperty.TextScale, target, ease );
+	}
+	
+	
+	public static UIAnimation scaleFromTo( this UITextInstance sprite, float duration, float start, float target, UIEaseType ease )
+	{
+		return fromTo( sprite, duration, UIAnimationProperty.TextScale, start, target, ease );
+	}
+	
+	
 	#endregion
 	
 	
@@ -181,6 +200,9 @@ public static class UIObjectAnimationExtensions
 		{
 			case UIAnimationProperty.Alpha:
 				current = sprite.color.a;
+				break;
+			case UIAnimationProperty.TextScale:
+				current = ((UITextInstance)sprite).textScale;
 				break;
 		}
 
